@@ -1,0 +1,1100 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Roda Perlawanan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap">
+<style>
+/* Layout: layar menu berkolom tunggal rata kiri dengan roda dekoratif di sudut; layar main = roda besar di kiri, papan kemajuan 25 soal di kanan; soal tampil sebagai kartu modal. */
+:root {
+  --ink: #17110d;        /* latar soga gelap */
+  --ink-2: #221912;      /* permukaan kartu */
+  --ink-3: #33261b;      /* garis dan chip */
+  --paper: #f3e9d6;      /* teks utama */
+  --paper-dim: #b9a98f;  /* teks sekunder */
+  --cinnabar: #cf4b2c;
+  --indigo: #35538a;
+  --ochre: #e0a93e;      /* aksen utama */
+  --teal: #2b8077;
+  --plum: #84406a;
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  padding-block: 20px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: hidden;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--ochre); outline-offset: 3px; }
+.shell { max-width: 1120px; margin: 0 auto; position: relative; }
+[hidden] { display: none !important; }
+
+/* ---------- tombol ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 0 22px; border-radius: 12px;
+  border: 2px solid var(--ink-3); background: var(--ink-2);
+  font-weight: 700; letter-spacing: .01em;
+  transition: transform .12s ease, background .15s ease, border-color .15s ease;
+}
+.btn:hover { border-color: var(--paper-dim); }
+.btn:active { transform: translateY(1px) scale(.98); }
+.btn.primary { background: var(--ochre); border-color: var(--ochre); color: #1d1308; }
+.btn.primary:hover { background: #efba52; border-color: #efba52; }
+.btn.ghost { background: transparent; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.icon-btn { min-height: 44px; min-width: 44px; padding: 0 14px; }
+
+/* ---------- kop sekolah ---------- */
+.kop { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 18px; align-items: center; padding-bottom: 14px; margin-bottom: 20px; border-bottom: 4px double var(--paper-dim); }
+.kop-mark { width: 64px; aspect-ratio: 1; border-radius: 50%; border: 3px solid var(--paper); grid-row: span 2; }
+.kop-school { font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 4.6vw, 38px); letter-spacing: .06em; line-height: 1.05; margin: 0; text-wrap: balance; }
+.kop-info { display: flex; flex-wrap: wrap; gap: 4px 26px; margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--paper-dim); }
+.kop-info li { min-width: 0; }
+.kop-info b { color: var(--paper); letter-spacing: .05em; text-transform: uppercase; }
+.kop-info span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; margin-right: 6px; }
+.kop.compact { padding-bottom: 8px; margin-bottom: 12px; }
+.kop.compact .kop-mark { width: 38px; border-width: 2px; }
+.kop.compact .kop-school { font-size: 18px; }
+.kop.compact .kop-info { font-size: 12px; gap: 2px 18px; }
+@media (max-width: 520px) { .kop-mark { width: 48px; } .kop-info { gap: 2px 16px; font-size: 13px; } }
+
+/* ---------- login ---------- */
+#login { min-height: calc(100dvh - 190px); display: flex; align-items: center; position: relative; }
+.login-card { position: relative; width: min(460px, 100%); background: var(--ink-2); border: 2px solid var(--ink-3); border-radius: 20px; padding: clamp(20px, 4vw, 32px); box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+.login-card h2 { font-family: var(--font-display); font-weight: 800; font-size: 32px; letter-spacing: -.02em; margin: 0 0 4px; }
+.login-card > p { margin: 0 0 22px; color: var(--paper-dim); }
+.field { display: grid; gap: 6px; margin-bottom: 16px; }
+.field label { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-dim); }
+.field input { width: 100%; min-height: 52px; padding: 0 16px; border-radius: 12px; border: 2px solid var(--ink-3); background: var(--ink); color: var(--paper); font: inherit; font-size: 17px; }
+.field input::placeholder { color: #7d6f5c; }
+.field input:focus { outline: none; border-color: var(--ochre); box-shadow: 0 0 0 3px rgba(224, 169, 62, .25); }
+.field.bad input { border-color: var(--cinnabar); }
+.err { min-height: 1.3em; margin: -6px 0 10px; color: #f08467; font-size: 14px; font-weight: 700; }
+.login-card .btn { width: 100%; min-height: 56px; font-size: 18px; }
+.hello { margin: -14px 0 24px; font-size: 15px; color: var(--paper-dim); }
+.hello b { color: var(--ochre); }
+.res-who { margin: 0 0 10px; font-weight: 700; font-size: 17px; }
+.res-who span { display: block; font-size: 13px; font-weight: 500; color: var(--paper-dim); }
+
+/* ---------- menu ---------- */
+#menu { min-height: calc(100dvh - 190px); display: flex; align-items: center; position: relative; }
+.deco {
+  position: fixed; z-index: 0; right: -180px; bottom: -180px;
+  width: min(640px, 110vw); aspect-ratio: 1; border-radius: 50%;
+  opacity: .5; pointer-events: none;
+  animation: slow 90s linear infinite;
+  mask-image: radial-gradient(circle, #000 55%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle, #000 55%, transparent 72%);
+}
+@keyframes slow { to { transform: rotate(360deg); } }
+.menu-copy { position: relative; max-width: 640px; padding-block: 24px; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.tag {
+  font-size: 13px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--ink-3); color: var(--paper-dim);
+}
+.tag.hot { border-color: var(--ochre); color: var(--ochre); }
+.menu-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(46px, 11vw, 104px); line-height: .94; letter-spacing: -.025em;
+  margin: 0 0 18px; text-wrap: balance;
+}
+.menu-title em { font-style: normal; color: var(--ochre); }
+.topic { font-size: clamp(17px, 2.4vw, 21px); color: var(--paper); max-width: 34ch; margin: 0 0 28px; text-wrap: pretty; }
+.topic span { color: var(--paper-dim); }
+.menu-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 36px; }
+.menu-actions .btn { min-height: 56px; font-size: 18px; padding: 0 30px; }
+.how { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 46ch; color: var(--paper-dim); font-size: 15px; }
+.how li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.how b { color: var(--ink); background: var(--paper-dim); border-radius: 50%; width: 24px; height: 24px; display: grid; place-items: center; font-size: 13px; margin-top: 2px; }
+
+/* ---------- game ---------- */
+.topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.topbar .spacer { flex: 1; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 20px; letter-spacing: -.01em; }
+.brand small { font-family: var(--font-body); font-weight: 500; font-size: 13px; color: var(--paper-dim); letter-spacing: .04em; margin-left: 8px; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; align-items: center; }
+.wheel-col { display: grid; justify-items: center; gap: 22px; min-width: 0; }
+.wheel-wrap { position: relative; width: min(100%, 560px); aspect-ratio: 1; }
+#wheel { width: 100%; height: 100%; display: block; border-radius: 50%; will-change: transform; filter: drop-shadow(0 18px 30px rgba(0,0,0,.45)); }
+.pointer {
+  position: absolute; top: -10px; left: 50%; width: 38px; height: 52px; margin-left: -19px;
+  transform-origin: 50% 12%; z-index: 3; filter: drop-shadow(0 3px 4px rgba(0,0,0,.5));
+}
+.hub {
+  position: absolute; top: 50%; left: 50%; width: 21%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 5px solid var(--paper); background: var(--ochre); color: #1d1308;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(13px, 2.8vw, 20px); letter-spacing: .04em;
+  box-shadow: 0 6px 18px rgba(0,0,0,.5), inset 0 -6px 0 rgba(0,0,0,.14);
+  z-index: 2; display: grid; place-items: center; padding: 0;
+}
+.hub:hover:not([disabled]) { background: #efba52; }
+.hub[disabled] { filter: saturate(.5); cursor: wait; }
+.spin-btn { min-height: 58px; font-size: 19px; padding: 0 44px; }
+
+.board { background: var(--ink-2); border: 2px solid var(--ink-3); border-radius: 18px; padding: 22px; min-width: 0; }
+.board h2 { font-family: var(--font-display); font-size: 20px; margin: 0 0 4px; letter-spacing: -.01em; }
+.board p { margin: 0 0 16px; color: var(--paper-dim); font-size: 14px; }
+.progress { height: 8px; background: var(--ink-3); border-radius: 99px; overflow: hidden; margin-bottom: 18px; }
+.progress i { display: block; height: 100%; width: 0; background: var(--ochre); transition: width .5s ease; }
+.chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
+.chips li {
+  aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center;
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px;
+  background: var(--ink-3); color: var(--paper-dim); border: 2px solid transparent;
+}
+.chips li.done { background: var(--ochre); color: #1d1308; }
+.chips li.now { border-color: var(--paper); }
+.board .btn { width: 100%; min-height: 44px; font-size: 14px; }
+
+/* ---------- modal soal ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: rgba(10, 6, 3, .78); backdrop-filter: blur(6px);
+  animation: fade .25s ease;
+}
+@keyframes fade { from { opacity: 0; } }
+.card {
+  width: min(740px, 100%); max-height: 100%; overflow-y: auto;
+  background: var(--ink-2); border: 2px solid var(--ink-3); border-radius: 22px;
+  padding: clamp(20px, 4vw, 34px); position: relative;
+  animation: pop .4s cubic-bezier(.2, 1.3, .4, 1);
+  box-shadow: 0 30px 80px rgba(0,0,0,.6);
+}
+.card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; border-radius: 20px 20px 0 0; background: var(--seg, var(--ochre)); }
+@keyframes pop { from { transform: translateY(24px) scale(.94); opacity: 0; } }
+.q-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 6px 0 16px; }
+.q-no {
+  font-family: var(--font-display); font-weight: 800; font-size: 20px;
+  background: var(--seg, var(--ochre)); color: #fff; padding: 2px 14px; border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.q-meta { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-dim); }
+.q-topic { font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--ochre); margin: 0 0 8px; }
+.q-text { font-size: clamp(18px, 2.6vw, 22px); line-height: 1.5; margin: 0 0 22px; text-wrap: pretty; }
+.opts { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 10px; }
+.opt {
+  width: 100%; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start;
+  text-align: left; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--ink-3);
+  background: var(--ink); font-size: 15.5px; line-height: 1.45;
+  transition: border-color .15s ease, background .15s ease, transform .12s ease;
+}
+.opt:hover:not([disabled]) { border-color: var(--paper-dim); transform: translateX(2px); }
+.opt .ltr {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; background: var(--ink-3); color: var(--paper);
+}
+.opt[disabled] { cursor: default; }
+.opt.right { border-color: var(--teal); background: rgba(43, 128, 119, .18); }
+.opt.right .ltr { background: var(--teal); color: #fff; }
+.opt.wrong { border-color: var(--cinnabar); background: rgba(207, 75, 44, .16); }
+.opt.wrong .ltr { background: var(--cinnabar); color: #fff; }
+.opt.dim { opacity: .55; }
+.q-try { margin-left: auto; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 1.5px solid var(--ochre); color: var(--ochre); font-variant-numeric: tabular-nums; }
+.score-box { display: flex; align-items: baseline; gap: 12px; margin: 0 0 14px; padding: 12px 14px; border-radius: 12px; background: var(--ink); border: 2px solid var(--ink-3); }
+.score-box strong { font-family: var(--font-display); font-size: 40px; line-height: 1; color: var(--ochre); font-variant-numeric: tabular-nums; }
+.score-box span { font-size: 13px; color: var(--paper-dim); line-height: 1.35; }
+.result-card { text-align: center; }
+.result-card .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--paper-dim); margin: 6px 0 4px; }
+.big-score { font-family: var(--font-display); font-weight: 800; font-size: clamp(88px, 22vw, 150px); line-height: 1; letter-spacing: -.03em; color: var(--ochre); font-variant-numeric: tabular-nums; margin: 0; }
+.big-score small { font-size: .28em; color: var(--paper-dim); letter-spacing: 0; margin-left: 6px; }
+.predikat { font-family: var(--font-display); font-weight: 800; font-size: 26px; margin: 4px 0 6px; }
+.res-note { color: var(--paper-dim); margin: 0 auto 20px; max-width: 46ch; text-wrap: pretty; }
+.breakdown { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 8px; text-align: left; }
+.breakdown li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 14px; align-items: center; padding: 10px 14px; border-radius: 12px; background: var(--ink); border: 2px solid var(--ink-3); font-variant-numeric: tabular-nums; }
+.breakdown li b { font-family: var(--font-display); font-size: 18px; }
+.breakdown li em { font-style: normal; color: var(--ochre); font-weight: 700; min-width: 5.5ch; text-align: right; }
+.breakdown li.total { border-color: var(--ochre); }
+.res-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 520px) { .res-actions { grid-template-columns: 1fr; } .breakdown li { gap: 10px; font-size: 14px; } }
+.verdict { margin: 0 0 14px; font-weight: 700; min-height: 1.4em; }
+.verdict.ok { color: #5cc3b8; }
+.verdict.no { color: #f08467; }
+.answer {
+  margin: 0 0 22px; padding: 16px 18px; border-radius: 14px;
+  background: rgba(224, 169, 62, .1); border: 2px dashed var(--ochre);
+  animation: rise .35s ease;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.answer h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--ochre); }
+.answer p { margin: 0; font-size: 16.5px; text-wrap: pretty; }
+.q-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.q-actions .btn { padding: 0 12px; font-size: 15px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  background: var(--paper); color: var(--ink); padding: 10px 18px; border-radius: 99px;
+  font-weight: 700; font-size: 14px; z-index: 80; max-width: calc(100vw - 32px); text-align: center;
+  animation: rise .3s ease;
+}
+
+@media (max-width: 880px) {
+  .stage { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .board { order: 2; }
+}
+@media (max-width: 520px) {
+  .q-actions { grid-template-columns: 1fr; }
+  .brand small { display: none; }
+  .deco { right: -260px; bottom: -220px; opacity: .35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deco, .card, .overlay, .answer { animation: none; }
+  .progress i { transition: none; }
+}
+</style>
+
+<div class="shell">
+
+  <!-- ===== KOP ===== -->
+  <header class="kop" id="kop">
+    <div class="kop-mark" id="kopMark" aria-hidden="true"></div>
+    <h1 class="kop-school">SMA N 9 KOTA JAMBI</h1>
+    <ul class="kop-info">
+      <li><span>Mata Pelajaran</span><b>Sejarah</b></li>
+      <li><span>Topik</span><b>Roda Perlawanan</b></li>
+      <li><span>Guru</span><b>Drs. Sastri, M.Pd</b></li>
+    </ul>
+  </header>
+
+  <!-- ===== LOGIN ===== -->
+  <section id="login" aria-labelledby="loginTitle">
+    <div class="deco" aria-hidden="true"></div>
+    <form class="login-card" id="loginForm" novalidate>
+      <h2 id="loginTitle">Masuk</h2>
+      <p>Isi nama dan kelas supaya nilai tercatat atas namamu.</p>
+      <div class="field" id="fNama">
+        <label for="inNama">Nama lengkap</label>
+        <input id="inNama" name="nama" type="text" autocomplete="name" maxlength="60" placeholder="Contoh: Andi Pratama" required>
+      </div>
+      <div class="field" id="fKelas">
+        <label for="inKelas">Kelas</label>
+        <input id="inKelas" name="kelas" type="text" autocomplete="off" maxlength="12" placeholder="Contoh: XI F" required>
+      </div>
+      <p class="err" id="loginErr" role="alert"></p>
+      <button class="btn primary" type="submit">Masuk dan Mulai</button>
+    </form>
+  </section>
+
+  <!-- ===== MENU UTAMA ===== -->
+  <section id="menu" hidden aria-labelledby="judul">
+    <div class="deco" id="deco" aria-hidden="true"></div>
+    <div class="menu-copy">
+      <div class="tags">
+        <span class="tag hot">Sejarah</span>
+        <span class="tag" id="tagKelas">Kelas XI F</span>
+        <span class="tag">Tahun 2026</span>
+        <span class="tag">25 soal HOTS</span>
+      </div>
+      <h2 class="menu-title" id="judul">Roda <em>Perlawanan</em></h2>
+      <p class="hello" id="hello"></p>
+      <p class="topic">Perlawanan rakyat terhadap kolonialisme. <span>Putar roda, baca soalnya, lalu pilih satu dari lima jawaban.</span></p>
+      <div class="menu-actions">
+        <button class="btn primary" id="startBtn" type="button">Mulai Main</button>
+        <button class="btn ghost" id="logoutBtn" type="button">Ganti Siswa</button>
+        <button class="btn ghost" id="muteMenu" type="button" aria-pressed="false">Suara: Hidup</button>
+      </div>
+      <ol class="how">
+        <li><b>1</b><span>Tekan tombol Putar. Roda berhenti pada satu nomor soal.</span></li>
+        <li><b>2</b><span>Soal berbentuk pilihan ganda A sampai E. Urutan soal dan pilihan jawaban selalu diacak. Pilih jawaban, atau tekan Lihat Jawaban untuk membuka kuncinya.</span></li>
+        <li><b>3</b><span>Setiap soal punya 3 kesempatan. Benar di percobaan pertama bernilai 4 poin, kedua 2 poin, ketiga 1 poin. Nilai 100 hanya untuk 25 jawaban yang benar sejak percobaan pertama.</span></li>
+        <li><b>4</b><span>Nomor yang sudah keluar ditandai dan diredupkan, jadi soal tidak berulang sampai ke-25 habis.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===== PERMAINAN ===== -->
+  <section id="game" hidden aria-label="Permainan roda">
+    <div class="topbar">
+      <button class="btn ghost icon-btn" id="backBtn" type="button" aria-label="Kembali ke menu utama">← Menu</button>
+      <div class="brand">Roda Perlawanan<small id="brandSub">Sejarah · XI F · 2026</small></div>
+      <div class="spacer"></div>
+      <button class="btn ghost icon-btn" id="muteGame" type="button" aria-pressed="false" aria-label="Nyalakan atau matikan suara">Suara: Hidup</button>
+    </div>
+
+    <div class="stage">
+      <div class="wheel-col">
+        <div class="wheel-wrap">
+          <svg class="pointer" id="pointer" viewBox="0 0 38 52" aria-hidden="true">
+            <path d="M19 52 L3 18 A17 17 0 1 1 35 18 Z" fill="#f3e9d6"/>
+            <circle cx="19" cy="17" r="6" fill="#cf4b2c"/>
+          </svg>
+          <canvas id="wheel" width="1040" height="1040" aria-label="Roda berisi 25 nomor soal"></canvas>
+          <button class="hub" id="hubBtn" type="button" aria-label="Putar roda">PUTAR</button>
+        </div>
+        <button class="btn primary spin-btn" id="spinBtn" type="button">Putar Roda</button>
+      </div>
+
+      <aside class="board" aria-label="Kemajuan soal">
+        <h2>Papan soal</h2>
+        <p><span id="count">0</span> dari 25 soal sudah keluar.</p>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="25" aria-valuenow="0" id="bar"><i id="barFill"></i></div>
+        <div class="score-box" aria-live="polite"><strong id="scoreNow">0</strong><span>nilai sementara dari 100.<br>Benar di percobaan pertama: <b id="firstCnt">0</b> soal.</span></div>
+        <ul class="chips" id="chips"></ul>
+        <button class="btn ghost" id="resetBtn" type="button">Mulai ulang dan acak soal</button>
+      </aside>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== KARTU SOAL ===== -->
+<div class="overlay" id="overlay" hidden>
+  <div class="card" id="card" role="dialog" aria-modal="true" aria-labelledby="qText">
+    <div class="q-head">
+      <span class="q-no" id="qNo">Soal 1</span>
+      <span class="q-meta" id="qLevel"></span>
+      <span class="q-try" id="qTry"></span>
+    </div>
+    <p class="q-topic" id="qTopic"></p>
+    <p class="q-text" id="qText"></p>
+    <ol class="opts" id="opts" aria-label="Pilihan jawaban"></ol>
+    <p class="verdict" id="verdict" role="status"></p>
+    <div class="answer" id="answer" hidden>
+      <h3 id="aHead">Jawaban</h3>
+      <p id="aText"></p>
+    </div>
+    <div class="q-actions">
+      <button class="btn primary" id="againBtn" type="button">Putar Lagi</button>
+      <button class="btn" id="ansBtn" type="button" aria-expanded="false">Lihat Jawaban</button>
+      <button class="btn ghost" id="homeBtn" type="button">Menu Utama</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HASIL AKHIR ===== -->
+<div class="overlay" id="result" hidden>
+  <div class="card result-card" role="dialog" aria-modal="true" aria-labelledby="resTitle">
+    <p class="eyebrow" id="resTitle">Nilai akhir Roda Perlawanan</p>
+    <p class="res-who" id="resWho"></p>
+    <p class="big-score"><span id="resScore">0</span><small>/ 100</small></p>
+    <p class="predikat" id="resPred"></p>
+    <p class="res-note" id="resNote"></p>
+    <ul class="breakdown" id="resList"></ul>
+    <div class="res-actions">
+      <button class="btn primary" id="resAgain" type="button">Main Lagi</button>
+      <button class="btn ghost" id="resHome" type="button">Menu Utama</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- 25 SOAL HOTS ---------------- */
+  var Q = [
+    {
+      "t": "Perang Diponegoro (1825–1830)",
+      "lv": "Menganalisis (C4)",
+      "q": "Perang Diponegoro (1825–1830) didukung bangsawan, ulama, dan petani sekaligus. Faktor yang paling tepat menjelaskan bersatunya ketiga lapisan itu adalah ....",
+      "o": [
+        "Mereka sama-sama dirugikan oleh campur tangan Belanda di istana, sewa tanah swasta, dan pajak berat.",
+        "Mereka sama-sama sudah memiliki organisasi modern yang mengoordinasikan perlawanan lewat surat kabar.",
+        "Mereka sama-sama menerima bantuan senjata dan dana dari Inggris yang ingin merebut kembali Pulau Jawa.",
+        "Mereka sama-sama menginginkan negara republik yang berdasar pada kesadaran kebangsaan Indonesia.",
+        "Mereka sama-sama berharap Belanda memberi jabatan tinggi setelah pasukan Diponegoro menyerah kalah."
+      ],
+      "a": "Berbagai lapisan merasa dirugikan oleh hal yang sama: campur tangan Belanda dalam urusan istana, penyewaan tanah kepada swasta, pajak dan pungutan yang berat, serta penghinaan terhadap adat dan agama, termasuk pembangunan jalan yang melintasi makam leluhur di Tegalrejo. Seruan perang sabil dan harapan akan Ratu Adil mempersatukan mereka. Karena dukungan tersebar luas di desa-desa, Belanda tidak bisa mengalahkan satu pusat kekuatan saja dan menghadapi perang gerilya yang panjang."
+    },
+    {
+      "t": "Benteng Stelsel",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Belanda membangun benteng-benteng di wilayah yang direbut dari pasukan Diponegoro. Strategi Benteng Stelsel ini efektif karena ....",
+      "o": [
+        "Benteng mempersempit ruang gerak pasukan serta memutus jalur logistik dan komunikasi para gerilyawan.",
+        "Benteng menghentikan seluruh pertempuran lewat perjanjian damai yang disetujui para bangsawan Mataram.",
+        "Benteng memaksa pasukan Diponegoro berperang di laut yang sepenuhnya dikuasai armada Belanda sejak awal.",
+        "Benteng menggantikan pasukan Belanda dengan prajurit pribumi sehingga seluruh biaya perang tertanggung.",
+        "Benteng membuat rakyat desa memperoleh perlindungan penuh dan berhenti membantu pasukan Diponegoro."
+      ],
+      "a": "Efektif karena benteng-benteng di wilayah yang direbut mempersempit ruang gerak pasukan Diponegoro, memutus jalur logistik dan komunikasi, serta memudahkan pengejaran. Kelemahannya, strategi ini lambat dan mahal: Belanda harus menempatkan banyak pasukan dan membangun banyak benteng, sehingga perang 1825–1830 menguras keuangan negeri jajahan."
+    },
+    {
+      "t": "Perang Padri (1803–1838)",
+      "lv": "Menganalisis (C4)",
+      "q": "Konflik kaum Padri dan kaum Adat di Minangkabau berubah menjadi perlawanan bersama terhadap Belanda setelah ....",
+      "o": [
+        "Kaum Adat menyadari bahwa Belanda yang dimintai bantuan justru ingin menguasai seluruh Minangkabau.",
+        "Kaum Padri menyerahkan senjata kepada Belanda dan menerima pemerintahan langsung dari Batavia.",
+        "Kaum Adat memperoleh seluruh kekuasaan sehingga tidak lagi memerlukan bantuan dari para ulama Padri.",
+        "Belanda memberi kemerdekaan penuh kepada Minangkabau sehingga kedua pihak tidak perlu berperang.",
+        "Inggris menduduki Minangkabau dan memaksa kedua kelompok menghentikan perang di seluruh wilayah itu."
+      ],
+      "a": "Kaum Adat meminta bantuan Belanda pada 1821, sehingga konflik sesama orang Minangkabau berubah menjadi perlawanan terhadap penjajah. Setelah menyadari bahwa Belanda mengincar penguasaan wilayah, kaum Adat dan kaum Padri berdamai dan bersatu melawan Belanda, yang ditandai dengan Plakat Panjang 1833 ketika Belanda menyatakan tidak akan menaklukkan Minangkabau."
+    },
+    {
+      "t": "Tuanku Imam Bonjol",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Tuanku Imam Bonjol ditangkap pada 1837 setelah diundang berunding oleh Belanda. Pelajaran paling tepat dari peristiwa ini adalah ....",
+      "o": [
+        "Diplomasi dipakai penjajah sebagai siasat militer sehingga pemimpin harus waspada terhadap jebakan.",
+        "Perundingan dengan penjajah selalu menguntungkan pejuang sehingga harus diterima tanpa persyaratan.",
+        "Penangkapan seorang pemimpin tidak berpengaruh pada perlawanan sehingga siasat Belanda sia-sia saja.",
+        "Perlawanan sebaiknya dihentikan sebab kekuatan senjata Belanda pasti unggul pada semua medan perang.",
+        "Kaum Adat dan kaum Padri tidak pernah bersatu sehingga perundingan itu mustahil dilakukan kedua pihak."
+      ],
+      "a": "Belanda memakai perundingan sebagai jebakan: undangan berunding dipakai untuk menangkap pemimpin perlawanan sehingga pasukan kehilangan komando. Pelajarannya, janji damai penjajah tidak selalu tulus dan dapat berfungsi sebagai siasat perang. Pemimpin perlu mengamankan jaminan dan menyiapkan penerus agar perlawanan tidak runtuh bersama satu tokoh."
+    },
+    {
+      "t": "Perang Aceh (1873–1904)",
+      "lv": "Menganalisis (C4)",
+      "q": "Perang Aceh (1873–1904) berlangsung selama puluhan tahun. Kombinasi faktor yang paling tepat menjelaskan lamanya perang itu adalah ....",
+      "o": [
+        "Semangat jihad, dukungan rakyat, kepemimpinan ulama, dan medan hutan pegunungan cocok bagi gerilya.",
+        "Persenjataan Aceh jauh lebih modern daripada Belanda sehingga pertempuran terbuka selalu dimenangkan.",
+        "Belanda sengaja memperlambat perang supaya dapat mengambil keuntungan dari kerja paksa rakyat Aceh.",
+        "Aceh didukung pasukan tetap dari kerajaan-kerajaan Jawa yang bergabung secara terorganisasi dan rapi.",
+        "Perlawanan hanya terjadi di ibu kota Aceh sehingga Belanda cukup menunggu para sultan untuk menyerah."
+      ],
+      "a": "Faktor utamanya: semangat jihad yang dipimpin ulama, dukungan rakyat yang luas, kepemimpinan para tokoh seperti Teuku Umar dan Cut Nyak Dien, serta medan hutan dan pegunungan yang cocok untuk perang gerilya. Orang Aceh juga memandang Belanda sebagai ancaman terhadap agama dan kedaulatan, sehingga perlawanan terus bangkit meski benteng utama jatuh."
+    },
+    {
+      "t": "Teuku Umar",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Teuku Umar berpura-pura menyerah pada 1893 lalu kembali melawan pada 1896. Penilaian yang paling tepat terhadap siasat ini adalah ....",
+      "o": [
+        "Siasat itu berhasil secara taktis karena ia mendapat senjata dan pasukan, tetapi memicu pembalasan keras.",
+        "Siasat itu gagal total sebab Belanda langsung menangkapnya dan tidak memberinya senjata maupun pasukan baru.",
+        "Siasat itu tanpa risiko apa pun karena Belanda terus memercayainya dan mengulangi cara serupa berkali-kali.",
+        "Siasat itu melanggar ajaran perang sabil sehingga ia kehilangan seluruh dukungan ulama dan rakyat Aceh.",
+        "Siasat itu hanya berpengaruh pada bidang ekonomi sehingga tidak menambah kekuatan militer para pejuang."
+      ],
+      "a": "Keuntungan: ia memperoleh senjata, perbekalan, dan pasukan terlatih dari Belanda, lalu membawanya kembali ke pihak Aceh. Risikonya: reputasinya dapat dianggap pengkhianat oleh rakyat sendiri, dan Belanda yang merasa dikhianati membalas dengan lebih keras. Strategi ini berhasil secara taktis, tetapi hanya bisa dipakai sekali karena kepercayaan Belanda hilang."
+    },
+    {
+      "t": "Cut Nyak Dien",
+      "lv": "Menganalisis (C4)",
+      "q": "Cut Nyak Dien melanjutkan gerilya setelah suaminya, Teuku Umar, gugur pada 1899. Hal ini menunjukkan bahwa ....",
+      "o": [
+        "Perlawanan tidak bergantung pada satu tokoh dan perempuan mampu memimpin perjuangan bersenjata.",
+        "Perlawanan Aceh berhenti total ketika seluruh pemimpin laki-laki gugur di medan pertempuran.",
+        "Peran perempuan terbatas pada urusan rumah tangga dan tidak memengaruhi jalannya peperangan.",
+        "Belanda membiarkan perempuan memimpin karena menganggap mereka tidak berbahaya bagi kekuasaan.",
+        "Perlawanan Aceh dikendalikan Belanda melalui para pemimpin perempuan yang mereka angkat sendiri."
+      ],
+      "a": "Perlawanan tidak bergantung pada satu tokoh laki-laki. Setelah Teuku Umar gugur pada 1899, Cut Nyak Dien melanjutkan perang, mengatur gerilya dan menjaga semangat pasukan hingga ditangkap dan diasingkan ke Sumedang pada 1906. Peran perempuan mencakup kepemimpinan, logistik, dan penjaga moral perjuangan."
+    },
+    {
+      "t": "Snouck Hurgronje",
+      "lv": "Menganalisis (C4)",
+      "q": "Snouck Hurgronje menyarankan agar ulama ditekan sedangkan uleebalang didekati. Dampak siasat tersebut terhadap perlawanan Aceh adalah ....",
+      "o": [
+        "Kerja sama dua kelompok penggerak perlawanan terpecah sehingga kekuatan Aceh melemah secara bertahap.",
+        "Persatuan ulama dan uleebalang menguat sehingga perlawanan Aceh meluas ke seluruh pulau Sumatra.",
+        "Perang berakhir seketika sebab seluruh rakyat Aceh langsung menyerah kepada pemerintah Belanda.",
+        "Belanda menghentikan operasi militer lalu menyerahkan kedaulatan kepada para ulama dan uleebalang.",
+        "Siasat itu tidak berdampak karena pengetahuan budaya dianggap tidak penting oleh pemerintah kolonial."
+      ],
+      "a": "Pengetahuan tentang masyarakat Aceh dipakai untuk memecah kekuatan: ulama dipandang sebagai pusat perlawanan dan ditekan secara militer, sedangkan uleebalang didekati dengan jabatan dan keuntungan. Ini memutus kerja sama dua kelompok penggerak perlawanan, sehingga perang melemah. Contoh bahwa kolonialisme memakai ilmu pengetahuan sebagai alat kekuasaan."
+    },
+    {
+      "t": "Perlawanan Pattimura (1817)",
+      "lv": "Menganalisis (C4)",
+      "q": "Pattimura (Thomas Matulessy) menyerbu Benteng Duurstede di Saparua pada 1817. Pemicu utama perlawanan itu adalah ....",
+      "o": [
+        "Kembalinya Belanda ke Maluku dengan monopoli rempah, penyerahan wajib, kerja paksa, dan wajib militer.",
+        "Keinginan membalas Inggris yang menghapus kekuasaan para raja dan menarik seluruh pajak rakyat Maluku.",
+        "Rencana Belanda membebaskan perdagangan rempah sehingga harga cengkih jatuh dan petani merugi besar.",
+        "Ajakan Portugis yang menjanjikan kapal perang untuk mengusir seluruh pedagang asing dari tanah Maluku.",
+        "Perebutan takhta Kesultanan Ternate yang melibatkan Belanda sebagai penengah di antara dua pangeran."
+      ],
+      "a": "Setelah pemerintahan Inggris berakhir, Belanda kembali berkuasa di Maluku dengan kebijakan yang memberatkan: penyerahan wajib hasil bumi, monopoli rempah, kerja paksa, dan perekrutan pemuda untuk dinas militer. Rakyat yang sudah lama menderita monopoli menyerbu Benteng Duurstede di Saparua dan membunuh residen Van den Berg pada Mei 1817."
+    },
+    {
+      "t": "Sultan Hasanuddin dan Perjanjian Bongaya",
+      "lv": "Menganalisis (C4)",
+      "q": "Perjanjian Bongaya (1667) mengakhiri perlawanan Sultan Hasanuddin. Dampak perjanjian itu bagi Makassar adalah ....",
+      "o": [
+        "Gowa mengakui monopoli VOC, kehilangan sebagian wilayah, dan kedaulatan dagang Makassar menyusut.",
+        "Gowa memperoleh monopoli rempah sedangkan VOC dilarang berdagang di seluruh nusantara bagian timur.",
+        "Makassar menjadi pelabuhan terbesar karena VOC membuka perdagangan bebas bagi semua bangsa asing.",
+        "Arung Palakka dihukum VOC karena berkhianat sehingga Bone kehilangan kemerdekaan secara sepenuhnya.",
+        "Sultan Hasanuddin diangkat menjadi gubernur VOC yang memimpin perdagangan di seluruh Sulawesi."
+      ],
+      "a": "Perjanjian ini memaksa Gowa mengakui monopoli perdagangan VOC, menyerahkan sejumlah wilayah, membayar ganti rugi perang, dan mengurangi kedaulatannya. Makassar yang tadinya pelabuhan bebas menjadi dikendalikan VOC. VOC menang karena bersekutu dengan Arung Palakka dari Bone, sehingga konflik antarkerajaan lokal dimanfaatkan."
+    },
+    {
+      "t": "Sultan Agung menyerang Batavia",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Serangan Sultan Agung ke Batavia (1628–1629) gagal meskipun pasukan Mataram sangat besar. Penyebab utamanya adalah ....",
+      "o": [
+        "Perbekalan menipis setelah lumbung dibakar VOC dan pasukan terserang penyakit selama perjalanan.",
+        "Pasukan Mataram tidak memiliki prajurit sendiri sehingga harus bergantung pada tentara Portugis.",
+        "Sultan Agung menghentikan serangan setelah menerima ganti rugi yang besar dari VOC di Batavia.",
+        "VOC menguasai seluruh pelabuhan Mataram sehingga pasukan tidak dapat meninggalkan pantai utara.",
+        "Banten dan Cirebon bersatu membantu VOC sehingga Mataram kalah dalam pertempuran terbuka pertama."
+      ],
+      "a": "Pasukan Mataram menempuh jarak jauh dengan perbekalan terbatas, sedangkan VOC membakar lumbung-lumbung beras dan kapal pengangkut, sehingga pasukan kekurangan pangan dan terserang penyakit. Benteng VOC yang dilengkapi senjata api juga sulit ditembus. Pelajarannya: logistik dan jalur suplai sama menentukan dengan jumlah pasukan."
+    },
+    {
+      "t": "Sultan Ageng Tirtayasa",
+      "lv": "Menganalisis (C4)",
+      "q": "VOC memakai politik adu domba (devide et impera) dalam konflik Sultan Ageng Tirtayasa dan putranya. Wujud nyata siasat ini adalah ....",
+      "o": [
+        "VOC membantu Sultan Haji melawan ayahnya dan memperoleh monopoli lada sebagai imbalan bantuan.",
+        "VOC membantu Sultan Ageng menyingkirkan Sultan Haji lalu menerima hadiah wilayah luas di Priangan.",
+        "VOC melarang kedua pihak berperang dan memaksa keduanya membagi kekuasaan secara adil dan setara.",
+        "VOC menyerahkan Banten kepada Mataram sebagai hadiah atas bantuan melawan pasukan Inggris di laut.",
+        "VOC membiarkan perang saudara berlangsung tanpa mengambil keuntungan dari perdagangan lada Banten."
+      ],
+      "a": "VOC memihak Sultan Haji dalam perebutan kekuasaan Banten dan membantunya mengalahkan ayahnya, yang akhirnya ditangkap pada 1683. Sebagai balasan, VOC memperoleh hak monopoli perdagangan lada dan pengaruh besar di Banten. Perpecahan keluarga kerajaan menjadi pintu masuk penjajah."
+    },
+    {
+      "t": "Perang Banjar dan Pangeran Antasari",
+      "lv": "Menganalisis (C4)",
+      "q": "Perang Banjar (1859) yang dipimpin Pangeran Antasari meletus terutama karena Belanda ....",
+      "o": [
+        "Mengangkat Tamjidullah sebagai sultan dan menyingkirkan Hidayatullah yang didukung oleh rakyat.",
+        "Menurunkan pajak tambang batu bara sehingga para bangsawan kehilangan pendapatan dari kerajaan.",
+        "Melarang pelayaran sungai sehingga Banjarmasin kehilangan hubungan dagang dengan seluruh Jawa.",
+        "Menyerahkan Banjar kepada Inggris tanpa berunding dengan para pemimpin, ulama, dan rakyat setempat.",
+        "Menutup seluruh madrasah di Kalimantan Selatan dan menggantinya dengan sekolah pemerintah kolonial."
+      ],
+      "a": "Belanda mengangkat Pangeran Tamjidullah yang dekat dengan mereka dan menyingkirkan Pangeran Hidayatullah yang didukung rakyat, sehingga kedaulatan kesultanan dilanggar. Sementara itu, kepentingan ekonomi atas tambang batu bara memperlihatkan niat menguasai sumber daya. Pangeran Antasari memimpin rakyat melawan dengan dukungan ulama dan masyarakat Dayak."
+    },
+    {
+      "t": "Puputan di Bali",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Puputan Badung (1906) dan Puputan Klungkung (1908) menunjukkan bahwa ....",
+      "o": [
+        "Perang habis-habisan dipilih karena menyerah dianggap menghilangkan kehormatan dan martabat bangsa.",
+        "Para raja Bali menyerahkan diri secara damai dan menyetujui pemerintahan Belanda dengan sukarela.",
+        "Rakyat Bali memilih jalur diplomasi dan menolak semua bentuk pertempuran bersenjata melawan Belanda.",
+        "Perang itu dipicu keinginan Bali menguasai Jawa Timur dan menyerang pelabuhan Surabaya dan Gresik.",
+        "Hukum Tawan Karang adalah kebijakan Belanda yang dijalankan dengan persetujuan para raja di Bali."
+      ],
+      "a": "Puputan berarti berperang sampai titik darah penghabisan, seperti dalam Puputan Badung (1906) dan Klungkung (1908). Pilihan ini diambil karena menyerah dianggap menghilangkan kehormatan dan martabat. Meski secara militer kalah, puputan memperlihatkan keteguhan menolak tunduk dan sekaligus menyingkap bahwa Tawan Karang hanyalah alasan untuk menguasai Bali."
+    },
+    {
+      "t": "Sisingamangaraja XII",
+      "lv": "Menganalisis (C4)",
+      "q": "Sisingamangaraja XII melawan Belanda sejak 1878 hingga gugur pada 1907. Alasan perlawanan itu adalah ....",
+      "o": [
+        "Perluasan Belanda dan kegiatan zending mengancam kedaulatan raja serta tatanan adat Batak.",
+        "Ia ingin menjadi residen Belanda di Tapanuli dan memperoleh hak monopoli perdagangan kopi.",
+        "Belanda menarik pajak yang sangat rendah sehingga raja kehilangan sumber pemasukan kerajaannya.",
+        "Aceh memerintahkannya menyerang Belanda agar pasukan Aceh dapat mundur dari wilayah Pidie.",
+        "Rakyat Batak menolak pendidikan modern dan melarang semua orang asing memasuki Tanah Batak."
+      ],
+      "a": "Perluasan Belanda ke wilayah Batak mengancam kedaulatan raja dan kendali atas wilayah serta perdagangan, sementara kegiatan zending yang berjalan bersama masuknya Belanda dipandang mengganggu tatanan adat dan keagamaan. Sisingamangaraja XII memimpin perlawanan gerilya selama puluhan tahun hingga gugur pada 1907."
+    },
+    {
+      "t": "Gerakan Samin",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Gerakan Samin menolak pajak dan kerja wajib tanpa kekerasan. Kelemahan terbesar strategi perlawanan ini adalah ....",
+      "o": [
+        "Cakupannya hanya satu wilayah sehingga pengaruh politiknya kecil dan pemimpinnya mudah ditangkap.",
+        "Aparat kolonial tidak mampu menanggapi penolakan itu sehingga seluruh Jawa bebas dari pajak.",
+        "Dukungan rakyat sangat sedikit sehingga gerakan bubar sebelum sempat menyebar ke desa-desa.",
+        "Gerakan ini bergantung pada pasukan bersenjata yang kalah jumlah dari tentara Belanda sejak awal.",
+        "Belanda memberi hak istimewa kepada pengikut Samin sehingga mereka kehilangan semangat melawan."
+      ],
+      "a": "Kelebihan: sulit dihadapi dengan kekuatan militer, melumpuhkan aparat lewat penolakan dan sikap diam, serta menumbuhkan identitas dan solidaritas petani. Keterbatasan: berpusat di wilayah kecil (sekitar Blora, Jawa), dampak politiknya terbatas, dan penguasa dapat menangkap tokohnya. Ini membuktikan perlawanan tidak selalu berbentuk perang."
+    },
+    {
+      "t": "Geger Cilegon 1888",
+      "lv": "Menganalisis (C4)",
+      "q": "Geger Cilegon (1888) yang dipimpin Haji Wasid disebut gerakan sosial-keagamaan karena ....",
+      "o": [
+        "Dipimpin ulama dengan basis petani yang tertekan pajak dan kerja paksa, bukan untuk merebut takhta.",
+        "Dipimpin sultan yang ingin merebut kembali takhta Banten dari pengaruh pemerintah kolonial Belanda.",
+        "Dipimpin pegawai kolonial yang menuntut kenaikan gaji dan perbaikan jabatan bagi pegawai pribumi.",
+        "Dipimpin tokoh partai modern yang ingin mendirikan negara kesatuan Republik Indonesia yang merdeka.",
+        "Dipimpin pedagang asing yang menuntut pembebasan bea masuk bagi kapal dagang di pelabuhan Banten."
+      ],
+      "a": "Pemimpinnya ulama dan pengikutnya petani yang tertekan oleh pajak, kerja paksa, dan kesulitan ekonomi setelah letusan Krakatau 1883 dan wabah ternak, ditambah pembatasan terhadap kegiatan keagamaan. Tujuannya bukan merebut takhta, melainkan menegakkan keadilan dan agama. Perlawanan ini berasal dari bawah, berbeda dengan perlawanan istana."
+    },
+    {
+      "t": "Dari Perang Jawa ke Tanam Paksa",
+      "lv": "Menganalisis (C4)",
+      "q": "Hubungan antara kerugian Perang Diponegoro dan kebijakan Tanam Paksa (1830) tampak pada ....",
+      "o": [
+        "Kas yang terkuras perang dipulihkan lewat kewajiban menanam tanaman ekspor bagi rakyat Jawa.",
+        "Keuntungan besar perang dipakai untuk membangun sekolah dan irigasi bagi seluruh rakyat Jawa.",
+        "Kebijakan itu dihapus setelah perang supaya rakyat Jawa dapat menanam padi secara bebas.",
+        "Belanda mengganti pajak tanah dengan upah tinggi sehingga kesejahteraan para petani meningkat.",
+        "Rakyat menyambut kebijakan itu dengan senang karena harga hasil bumi naik sangat tinggi."
+      ],
+      "a": "Perang Jawa dan perang-perang lain menguras kas Hindia Belanda dan negeri induk. Gubernur Jenderal Van den Bosch menerapkan Tanam Paksa untuk mengisi kembali kas dengan memaksa rakyat menanam tanaman ekspor. Akibatnya kelaparan, kerja berlebihan, dan kemiskinan, yang memicu keluhan dan kritik, bahkan di Belanda sendiri."
+    },
+    {
+      "t": "Perlawanan tradisional dan pergerakan nasional",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Perlawanan bersenjata abad ke-19 umumnya gagal, sedangkan pergerakan nasional sejak 1908 lebih berhasil karena ....",
+      "o": [
+        "Pergerakan nasional memakai organisasi, pers, dan pendidikan serta gagasan kebangsaan lintas daerah.",
+        "Pergerakan nasional memiliki persenjataan lebih lengkap dan tentara tetap dalam jumlah yang besar.",
+        "Perlawanan abad ke-19 tidak memiliki pemimpin sehingga rakyat berjuang tanpa tujuan yang tertentu.",
+        "Belanda sudah menghentikan penindasan sehingga perjuangan tidak perlu lagi dilakukan oleh rakyat.",
+        "Pergerakan nasional hanya melibatkan satu suku sehingga lebih mudah dikoordinasikan oleh para tokoh."
+      ],
+      "a": "Perlawanan awal bersifat kedaerahan, bergantung pada tokoh kharismatik, tidak terkoordinasi, bersenjata lebih lemah, dan mudah dipecah belah. Pergerakan nasional memakai organisasi modern, pers, pendidikan, dan gagasan kebangsaan yang melampaui suku dan daerah, sehingga membangun kesadaran bersama dan dukungan yang berkelanjutan."
+    },
+    {
+      "t": "Ratu Adil dan mobilisasi rakyat",
+      "lv": "Menganalisis (C4)",
+      "q": "Kepercayaan akan datangnya Ratu Adil dipakai memobilisasi rakyat Jawa. Kerentanan utama kepercayaan ini adalah ....",
+      "o": [
+        "Gerakan bergantung pada satu sosok sehingga mudah runtuh dan memicu kecewa saat ia tertangkap.",
+        "Tidak ada simbol pemersatu sehingga petani tidak mengenal tujuan dan arah perjuangan sama sekali.",
+        "Rakyat biasa dilarang ikut serta sehingga pendukungnya hanya terbatas pada kaum bangsawan saja.",
+        "Para ulama dan petani menolaknya sejak awal sehingga semangat perjuangan hilang sebelum perang.",
+        "Gerakan sepenuhnya menunggu bantuan asing yang dijanjikan oleh para pemimpin sejak awal sejak awal."
+      ],
+      "a": "Kekuatan: memberi harapan, legitimasi moral dan spiritual, serta menyatukan massa petani di bawah satu simbol. Kerentanan: gerakan sangat bergantung pada sosok tertentu, sehingga kekuatan dapat runtuh setelah pemimpin ditangkap atau gugur, dan harapan yang tidak segera terwujud bisa berubah menjadi kekecewaan."
+    },
+    {
+      "t": "Sultan Baabullah dari Ternate",
+      "lv": "Menganalisis (C4)",
+      "q": "Sultan Khairun dibunuh Portugis pada 1570 saat berunding. Tindakan Sultan Baabullah sesudah peristiwa itu adalah ....",
+      "o": [
+        "Mempersatukan rakyat dan mengepung benteng Portugis hingga mereka meninggalkan Ternate pada 1575.",
+        "Berdamai dengan Portugis dan menyerahkan monopoli cengkih demi keselamatan seluruh keluarga kerajaan.",
+        "Meminta Spanyol memimpin pasukan Ternate lalu menyerahkan jabatan sultan kepada seorang gubernur.",
+        "Memindahkan pusat kerajaan ke Jawa dan menghentikan seluruh pertempuran melawan pasukan Portugis.",
+        "Menghukum rakyat Ternate yang dituduh bersekutu dan menutup pelabuhan bagi semua pedagang asing."
+      ],
+      "a": "Pengkhianatan itu menimbulkan amarah dan persatuan rakyat Ternate. Sultan Baabullah, putra Khairun, mengepung benteng Portugis selama bertahun-tahun hingga Portugis menyerah dan meninggalkan Ternate pada 1575. Ini salah satu keberhasilan awal melawan bangsa Eropa karena persatuan dan kegigihan."
+    },
+    {
+      "t": "Sultan Nuku dari Tidore",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Strategi Sultan Nuku memadukan perlawanan dan diplomasi. Bukti paling tepat strategi itu adalah ketika ia ....",
+      "o": [
+        "Menyatukan pasukan Maluku dan memakai persaingan Inggris–Belanda untuk mengusir VOC dari Tidore.",
+        "Menyerahkan Tidore kepada VOC dan menerima gaji tetap sebagai wakil resmi pemerintah kolonial.",
+        "Menolak semua kerja sama dan berperang sendirian tanpa dukungan dari wilayah lain di sekitarnya.",
+        "Mengundang pasukan Portugis ke Tidore agar bersama-sama menghadapi pasukan Inggris di Maluku.",
+        "Mengakhiri perang dengan membayar upeti tahunan kepada VOC dan menutup pelabuhan Tidore bagi kapal."
+      ],
+      "a": "Nuku menyatukan pasukan dari Tidore, Ternate, Halmahera, dan wilayah sekitarnya, serta memanfaatkan persaingan Inggris dan Belanda untuk melemahkan VOC. Strategi ini tepat secara taktis karena Nuku berhasil mengusir VOC dari Tidore pada 1797. Risikonya, bantuan asing dapat membuka ketergantungan baru bila kepentingan mereka berbeda."
+    },
+    {
+      "t": "Hikayat Perang Sabil",
+      "lv": "Menganalisis (C4)",
+      "q": "Hikayat Perang Sabil dibacakan untuk membangkitkan semangat pejuang Aceh. Fungsi karya sastra ini dalam perlawanan adalah ....",
+      "o": [
+        "Membangkitkan semangat, mudah disebarkan secara lisan, dan memperkuat identitas bersama.",
+        "Memuat peta benteng Belanda sehingga pasukan Aceh dapat menyerang secara tepat sasaran.",
+        "Berisi perjanjian damai antara para ulama Aceh dan pemerintah kolonial Belanda sejak awal.",
+        "Melarang rakyat berperang sehingga perlawanan dialihkan sepenuhnya ke bidang perdagangan.",
+        "Hanya menjadi hiburan sehingga tidak berkaitan dengan semangat perjuangan rakyat Aceh."
+      ],
+      "a": "Hikayat mengubah tujuan perang menjadi pengabdian bernilai agama sehingga menguatkan keberanian dan pengorbanan, mudah disebarkan lewat pembacaan lisan, dan memperkuat identitas bersama. Karena pengaruhnya itu, Belanda memandang karya ini berbahaya bagi kekuasaannya. Kebudayaan terbukti dapat menjadi alat mobilisasi."
+    },
+    {
+      "t": "Hambatan persatuan perlawanan",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Perlawanan antardaerah pada abad ke-19 sulit bersatu. Hambatan utama beserta solusi yang paling tepat adalah ....",
+      "o": [
+        "Komunikasi sulit dan kepentingan berbeda, solusinya jaringan penghubung dan tujuan bersama.",
+        "Pangan kurang, solusinya meminta Belanda menyediakan beras bagi seluruh pasukan perlawanan.",
+        "Pangan kurang, solusinya meminta Belanda menyediakan beras bagi seluruh pasukan perlawanan itu.",
+        "Senjata modern terlalu banyak, solusinya melarang rakyat memiliki senjata dalam bentuk apa pun.",
+        "Tokoh agama terlalu sedikit, solusinya menghapus peran ulama dari semua kegiatan perlawanan."
+      ],
+      "a": "Hambatan yang nyata pada abad ke-19 adalah jarak, komunikasi yang sulit, kepentingan kerajaan yang berbeda, dan politik adu domba, sehingga solusi yang masuk akal adalah jaringan penghubung antarwilayah dan tujuan bersama yang jelas. Opsi lain menyebut masalah dan solusi yang tidak sesuai dengan keadaan saat itu."
+    },
+    {
+      "t": "Nilai perlawanan untuk masa kini",
+      "lv": "Mengevaluasi (C5)",
+      "q": "Nilai teladan tokoh perlawanan yang paling tepat diterapkan untuk menghadapi hoaks di media sosial adalah ....",
+      "o": [
+        "Persatuan dan kewaspadaan terhadap siasat pecah belah dengan memeriksa kabar sebelum berbagi.",
+        "Mengutamakan keuntungan pribadi dengan membagikan kabar yang cepat tersebar tanpa memeriksanya.",
+        "Menghindari diskusi dan menolak semua informasi dari pihak yang berbeda pendapat dengan kita.",
+        "Membalas ujaran kebencian dengan ujaran serupa agar pihak lawan menjadi takut dan berhenti.",
+        "Mengikuti kelompok terbesar tanpa menimbang alasan agar tidak dianggap berbeda dari mayoritas."
+      ],
+      "a": "Nilai persatuan dan kewaspadaan terhadap siasat memecah belah, seperti dalam perjuangan melawan politik adu domba, paling tepat dipakai untuk menghadapi hoaks: periksa kabar sebelum dibagikan. Opsi lain justru menyuburkan hoaks, perpecahan, atau sikap ikut-ikutan."
+    }
+  ];
+  var N = Q.length; // 25
+  var PAL = ["#cf4b2c", "#35538a", "#e0a93e", "#2b8077", "#84406a"];
+  var TEXTC = ["#fff", "#fff", "#2a1b08", "#fff", "#fff"];
+
+  /* ---------------- util ---------------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------- suara ---------------- */
+  var ac = null, muted = false;
+  function audio() {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ac = null; } }
+    if (ac && ac.state === "suspended") { try { ac.resume(); } catch (e) {} }
+    return ac;
+  }
+  function tone(freq, dur, type, vol, delay, endFreq) {
+    if (muted) return;
+    var c = audio(); if (!c) return;
+    var t = c.currentTime + (delay || 0);
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t);
+    if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.06, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  var sfx = {
+    tick: function () { tone(1250 + Math.random() * 120, 0.035, "triangle", 0.05); },
+    click: function () { tone(520, 0.07, "sine", 0.06, 0, 380); },
+    start: function () { tone(330, 0.12, "triangle", 0.06); tone(494, 0.12, "triangle", 0.06, 0.09); tone(660, 0.2, "triangle", 0.06, 0.18); },
+    win: function () { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.28, "sine", 0.07, i * 0.09); }); },
+    reveal: function () { tone(440, 0.1, "sine", 0.06); tone(660, 0.18, "sine", 0.06, 0.08); }
+  };
+  function setMute(m) {
+    muted = m;
+    var label = "Suara: " + (m ? "Mati" : "Hidup");
+    ["muteMenu", "muteGame"].forEach(function (id) {
+      $(id).textContent = label; $(id).setAttribute("aria-pressed", String(m));
+    });
+  }
+
+  /* ---------------- dekorasi menu ---------------- */
+  (function () {
+    var stops = [], seg = 360 / N;
+    for (var i = 0; i < N; i++) {
+      var col = PAL[i % 5];
+      stops.push(col + " " + (i * seg).toFixed(2) + "deg " + ((i + 1) * seg).toFixed(2) + "deg");
+    }
+    var cg = "conic-gradient(" + stops.join(",") + ")";
+    document.querySelectorAll(".deco").forEach(function (d) { d.style.background = cg; });
+    $("kopMark").style.background = cg;
+  })();
+
+  /* ---------------- roda ---------------- */
+  var cv = $("wheel"), ctx = cv.getContext("2d");
+  var S = cv.width, SEG = 360 / N;
+  var used = new Set(), rot = 0, spinning = false, current = -1, correctPos = -1, answered = false, tries = 0, results = [];
+  var PTS = [4, 2, 1], MAXTRY = 3; // poin percobaan ke-1, ke-2, ke-3
+  var order = shuffle(range(N)); // nomor di roda -> indeks soal
+  function range(n) { var a = []; for (var i = 0; i < n; i++) a.push(i); return a; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function newDeck() { used.clear(); current = -1; results = []; tries = 0; answered = false; order = shuffle(range(N)); drawWheel(); renderBoard(); }
+
+  function drawWheel() {
+    var cx = S / 2, R = S / 2 - 34;
+    ctx.clearRect(0, 0, S, S);
+    // bingkai luar
+    ctx.beginPath(); ctx.arc(cx, cx, S / 2 - 4, 0, Math.PI * 2);
+    ctx.fillStyle = "#2b1f15"; ctx.fill();
+    ctx.lineWidth = 6; ctx.strokeStyle = "#f3e9d6"; ctx.stroke();
+    // segmen
+    for (var i = 0; i < N; i++) {
+      var a0 = (-90 + i * SEG) * Math.PI / 180, a1 = (-90 + (i + 1) * SEG) * Math.PI / 180;
+      ctx.beginPath(); ctx.moveTo(cx, cx); ctx.arc(cx, cx, R, a0, a1); ctx.closePath();
+      var isUsed = used.has(i);
+      ctx.fillStyle = PAL[i % 5]; ctx.fill();
+      if (isUsed) { ctx.fillStyle = "rgba(23,17,13,.68)"; ctx.fill(); }
+      ctx.lineWidth = 2; ctx.strokeStyle = "rgba(23,17,13,.55)"; ctx.stroke();
+      // nomor
+      ctx.save();
+      ctx.translate(cx, cx); ctx.rotate((a0 + a1) / 2);
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.font = "800 46px 'Bricolage Grotesque', 'Trebuchet MS', sans-serif";
+      ctx.fillStyle = isUsed ? "rgba(243,233,214,.4)" : TEXTC[i % 5];
+      ctx.fillText(String(i + 1), R - 28, 0);
+      ctx.restore();
+    }
+    // lampu tepi
+    for (var j = 0; j < N; j++) {
+      var a = (-90 + (j + 0.5) * SEG) * Math.PI / 180;
+      var rr = S / 2 - 19;
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * rr, cx + Math.sin(a) * rr, 6, 0, Math.PI * 2);
+      ctx.fillStyle = j % 2 ? "#e0a93e" : "#f3e9d6"; ctx.fill();
+    }
+  }
+
+  function indexAt(angle) { // segmen di bawah penunjuk (atas) saat roda berputar `angle` derajat
+    var m = ((-angle % 360) + 360) % 360;
+    return Math.min(N - 1, Math.floor(m / SEG));
+  }
+  function setRot(a) { cv.style.transform = "rotate(" + a + "deg)"; }
+
+  function flick() {
+    var p = $("pointer");
+    if (p.animate && !reduce) p.animate([{ transform: "rotate(0)" }, { transform: "rotate(-22deg)" }, { transform: "rotate(0)" }], { duration: 110, easing: "ease-out" });
+  }
+
+  function pickTarget() {
+    if (used.size >= N) { newDeck(); toast("Semua 25 soal sudah keluar. Soal diacak ulang."); }
+    var avail = [];
+    for (var i = 0; i < N; i++) if (!used.has(i)) avail.push(i);
+    return avail[Math.floor(Math.random() * avail.length)];
+  }
+
+  function spin() {
+    if (spinning) return;
+    settle();
+    if (used.size >= N) { showResult(); return; }
+    audio(); sfx.start();
+    var idx = pickTarget();
+    var off = SEG * (0.18 + Math.random() * 0.64);
+    var want = ((360 - (idx * SEG + off)) % 360 + 360) % 360;
+    var cur = ((rot % 360) + 360) % 360;
+    var delta = ((want - cur) + 360) % 360 + 360 * (5 + Math.floor(Math.random() * 3));
+    var from = rot, to = rot + delta;
+    var dur = reduce ? 1200 : 5600;
+    var t0 = performance.now(), last = indexAt(rot);
+    spinning = true; setSpinUI(true);
+    function ease(x) { return 1 - Math.pow(1 - x, 4); }
+    function frame(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      rot = from + (to - from) * ease(p);
+      setRot(rot);
+      var k = indexAt(rot);
+      if (k !== last) { last = k; sfx.tick(); flick(); }
+      if (p < 1) requestAnimationFrame(frame);
+      else { rot = to; setRot(rot); spinning = false; setSpinUI(false); showQuestion(idx); }
+    }
+    requestAnimationFrame(frame);
+  }
+  function setSpinUI(on) {
+    $("spinBtn").disabled = on; $("hubBtn").disabled = on;
+    $("spinBtn").textContent = on ? "Berputar…" : (used.size >= N ? "Lihat Nilai" : "Putar Roda");
+  }
+
+  /* ---------------- papan ---------------- */
+  function renderBoard() {
+    var ul = $("chips"); ul.textContent = "";
+    for (var i = 0; i < N; i++) {
+      var li = document.createElement("li");
+      li.textContent = i + 1;
+      if (used.has(i)) li.className = "done";
+      if (i === current) li.className += " now";
+      ul.appendChild(li);
+    }
+    $("count").textContent = used.size;
+    $("barFill").style.width = (used.size / N * 100) + "%";
+    $("bar").setAttribute("aria-valuenow", used.size);
+    $("scoreNow").textContent = totalScore();
+    $("firstCnt").textContent = results.filter(function (r) { return r && r.pts === PTS[0]; }).length;
+    if (!spinning) $("spinBtn").textContent = used.size >= N ? "Lihat Nilai" : "Putar Roda";
+  }
+  function totalScore() { return results.reduce(function (s, r) { return s + (r ? r.pts : 0); }, 0); }
+
+  /* ---------------- soal ---------------- */
+  var LET = ["A", "B", "C", "D", "E"];
+  function showQuestion(i) {
+    current = i; used.add(i); drawWheel(); renderBoard();
+    var q = Q[order[i]], card = $("card");
+    card.style.setProperty("--seg", PAL[i % 5]);
+    $("qNo").textContent = "Soal " + (i + 1);
+    $("qLevel").textContent = q.lv;
+    $("qTopic").textContent = q.t;
+    $("qText").textContent = q.q;
+    // acak urutan opsi; opsi benar selalu disimpan di indeks 0 pada data
+    var idx = shuffle(range(q.o.length)), box = $("opts");
+    box.textContent = ""; answered = false; tries = 0; correctPos = idx.indexOf(0);
+    idx.forEach(function (k, pos) {
+      var li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button"; b.className = "opt"; b.dataset.pos = pos;
+      var l = document.createElement("span"); l.className = "ltr"; l.textContent = LET[pos];
+      var t = document.createElement("span"); t.textContent = q.o[k];
+      b.appendChild(l); b.appendChild(t);
+      b.addEventListener("click", function () { choose(pos); });
+      li.appendChild(b); box.appendChild(li);
+    });
+    $("verdict").textContent = ""; $("verdict").className = "verdict";
+    $("aHead").textContent = "Pembahasan";
+    updateTry();
+    $("againBtn").textContent = used.size >= N ? "Lihat Nilai" : "Putar Lagi";
+    $("aText").textContent = q.a;
+    $("answer").hidden = true;
+    $("ansBtn").textContent = "Lihat Jawaban";
+    $("ansBtn").setAttribute("aria-expanded", "false");
+    $("overlay").hidden = false;
+    card.scrollTop = 0;
+    sfx.win();
+    setTimeout(function () { $("againBtn").focus({ preventScroll: true }); }, 60);
+  }
+  function updateTry() {
+    var t = $("qTry");
+    if (answered) { var r = results[current]; t.textContent = r ? "+" + r.pts + " poin" : ""; return; }
+    t.textContent = "Percobaan " + (tries + 1) + "/" + MAXTRY + " · " + PTS[tries] + " poin";
+  }
+  function markKey() {
+    $("opts").querySelectorAll(".opt").forEach(function (b, pos) {
+      b.disabled = true;
+      if (pos === correctPos) b.classList.add("right");
+      else if (!b.classList.contains("wrong")) b.classList.add("dim");
+    });
+  }
+  function finish(pts, msg, cls) {
+    answered = true;
+    results[current] = { tries: tries, pts: pts };
+    markKey(); updateTry(); renderBoard();
+    var v = $("verdict"); v.textContent = msg; v.className = "verdict " + cls;
+    showAnswer(true);
+  }
+  function settle() { // soal yang ditinggalkan sebelum selesai dihitung 0 poin
+    if (current >= 0 && !answered) { answered = true; results[current] = { tries: tries, pts: 0 }; renderBoard(); }
+  }
+  function choose(pos) {
+    if (answered) return;
+    var btn = $("opts").querySelectorAll(".opt")[pos];
+    tries++;
+    if (pos === correctPos) {
+      var p = PTS[tries - 1];
+      sfx.win();
+      finish(p, tries === 1 ? "Tepat! Benar di percobaan pertama, +" + p + " poin." : "Benar di percobaan ke-" + tries + ", +" + p + " poin.", "ok");
+      return;
+    }
+    btn.classList.add("wrong"); btn.disabled = true;
+    tone(260, 0.25, "sawtooth", 0.04, 0, 180);
+    if (tries >= MAXTRY) {
+      finish(0, "Kesempatan habis. Jawaban yang benar adalah " + LET[correctPos] + ", 0 poin.", "no");
+    } else {
+      var v = $("verdict");
+      v.textContent = "Belum tepat. Pilih jawaban lain. Sisa kesempatan: " + (MAXTRY - tries) + ".";
+      v.className = "verdict no"; updateTry();
+    }
+  }
+  function showAnswer(on) {
+    $("answer").hidden = !on;
+    $("ansBtn").textContent = on ? "Sembunyikan Pembahasan" : "Lihat Jawaban";
+    $("ansBtn").setAttribute("aria-expanded", String(on));
+  }
+  function closeQuestion() { $("overlay").hidden = true; }
+
+  function toggleAnswer() {
+    var show = $("answer").hidden;
+    if (show && !answered) {
+      sfx.reveal();
+      finish(0, "Kunci jawaban: " + LET[correctPos] + ". Kunci dibuka sebelum menjawab, 0 poin.", "no");
+      return;
+    }
+    showAnswer(show);
+    if (show) { sfx.reveal(); $("answer").scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" }); }
+    else sfx.click();
+  }
+
+  /* ---------------- hasil akhir ---------------- */
+  function showResult() {
+    settle(); closeQuestion();
+    var c = [0, 0, 0, 0];
+    results.forEach(function (r) { if (!r) return; var k = r.pts === PTS[0] ? 0 : r.pts === PTS[1] ? 1 : r.pts === PTS[2] ? 2 : 3; c[k]++; });
+    var score = totalScore();
+    $("resScore").textContent = score;
+    var who = $("resWho"); who.textContent = student.nama + " · Kelas " + student.kelas;
+    var dt = document.createElement("span");
+    dt.textContent = "SMA N 9 Kota Jambi · Sejarah · " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    who.appendChild(dt);
+    var pred = score === 100 ? "Sempurna" : score >= 85 ? "Sangat Baik" : score >= 70 ? "Baik" : score >= 55 ? "Cukup" : "Perlu Belajar Lagi";
+    $("resPred").textContent = pred;
+    $("resNote").textContent = score === 100
+      ? "Semua 25 soal dijawab benar pada percobaan pertama. Nilai penuh."
+      : "Nilai 100 hanya diperoleh jika semua soal benar pada percobaan pertama. Jawaban benar di percobaan kedua bernilai 2 poin, ketiga 1 poin.";
+    var rows = [["Benar di percobaan ke-1", c[0], c[0] * PTS[0]], ["Benar di percobaan ke-2", c[1], c[1] * PTS[1]], ["Benar di percobaan ke-3", c[2], c[2] * PTS[2]], ["Salah atau dilewati", c[3], 0]];
+    var ul = $("resList"); ul.textContent = "";
+    rows.forEach(function (r) {
+      var li = document.createElement("li");
+      var a = document.createElement("span"); a.textContent = r[0];
+      var b = document.createElement("b"); b.textContent = r[1] + " soal";
+      var e = document.createElement("em"); e.textContent = "+" + r[2];
+      li.appendChild(a); li.appendChild(b); li.appendChild(e); ul.appendChild(li);
+    });
+    var t = document.createElement("li"); t.className = "total";
+    var ta = document.createElement("span"); ta.textContent = "Total nilai";
+    var tb = document.createElement("b"); tb.textContent = N + " soal";
+    var te = document.createElement("em"); te.textContent = score;
+    t.appendChild(ta); t.appendChild(tb); t.appendChild(te); ul.appendChild(t);
+    $("result").hidden = false;
+    [523, 659, 784, 1047, 784, 1047, 1319].forEach(function (f, i) { tone(f, 0.3, "sine", 0.07, i * 0.11); });
+    setTimeout(function () { $("resAgain").focus({ preventScroll: true }); }, 60);
+  }
+
+  /* ---------------- navigasi ---------------- */
+  function toGame() { $("menu").hidden = true; $("game").hidden = false; $("kop").classList.add("compact"); renderBoard(); window.scrollTo(0, 0); }
+  function toMenu() { closeQuestion(); $("result").hidden = true; $("game").hidden = true; $("menu").hidden = false; $("kop").classList.remove("compact"); window.scrollTo(0, 0); }
+
+  var toastTimer;
+  function toast(msg) {
+    var old = document.querySelector(".toast"); if (old) old.remove();
+    var t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+    document.body.appendChild(t);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, 3200);
+  }
+
+  /* ---------------- login ---------------- */
+  var student = { nama: "", kelas: "" };
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
+  function applyStudent() {
+    $("tagKelas").textContent = "Kelas " + student.kelas;
+    $("hello").textContent = "";
+    var b = document.createElement("b"); b.textContent = student.nama;
+    $("hello").appendChild(document.createTextNode("Peserta: ")); $("hello").appendChild(b);
+    $("hello").appendChild(document.createTextNode(" · Kelas " + student.kelas));
+    $("brandSub").textContent = student.nama + " · " + student.kelas;
+  }
+  function cleanName(s) { return s.replace(/\s+/g, " ").trim(); }
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var nama = cleanName($("inNama").value), kelas = cleanName($("inKelas").value).toUpperCase();
+    $("fNama").classList.toggle("bad", nama.length < 3);
+    $("fKelas").classList.toggle("bad", kelas.length < 1);
+    if (nama.length < 3) { $("loginErr").textContent = "Isi nama lengkap, minimal 3 huruf."; $("inNama").focus(); return; }
+    if (kelas.length < 1) { $("loginErr").textContent = "Isi kelas, misalnya XI F."; $("inKelas").focus(); return; }
+    $("loginErr").textContent = "";
+    student = { nama: nama, kelas: kelas };
+    store("rp_nama", nama); store("rp_kelas", kelas);
+    applyStudent(); audio(); sfx.start();
+    newDeck();
+    $("login").hidden = true; $("menu").hidden = false; window.scrollTo(0, 0);
+  });
+  $("logoutBtn").addEventListener("click", function () {
+    sfx.click(); newDeck();
+    $("menu").hidden = true; $("login").hidden = false; $("kop").classList.remove("compact");
+    $("inNama").focus();
+  });
+  (function () {
+    var n = store("rp_nama"), k = store("rp_kelas");
+    if (n) $("inNama").value = n;
+    $("inKelas").value = k || "XI F";
+  })();
+
+  /* ---------------- peristiwa ---------------- */
+  $("startBtn").addEventListener("click", function () { audio(); sfx.click(); toGame(); });
+  $("backBtn").addEventListener("click", function () { if (spinning) return; sfx.click(); toMenu(); });
+  $("spinBtn").addEventListener("click", spin);
+  $("hubBtn").addEventListener("click", spin);
+  $("ansBtn").addEventListener("click", toggleAnswer);
+  $("againBtn").addEventListener("click", function () { settle(); closeQuestion(); if (used.size >= N) showResult(); else setTimeout(spin, 220); });
+  $("homeBtn").addEventListener("click", function () { sfx.click(); toMenu(); });
+  $("resAgain").addEventListener("click", function () { $("result").hidden = true; newDeck(); sfx.click(); toast("Permainan baru dimulai. Soal diacak ulang."); });
+  $("resHome").addEventListener("click", function () { $("result").hidden = true; sfx.click(); toMenu(); });
+  $("resetBtn").addEventListener("click", function () {
+    if (spinning) return;
+    newDeck(); sfx.click(); toast("Soal dan nomor di roda diacak ulang.");
+  });
+  ["muteMenu", "muteGame"].forEach(function (id) {
+    $(id).addEventListener("click", function () { setMute(!muted); if (!muted) { audio(); sfx.click(); } });
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.code === "Space" && !$("game").hidden && $("overlay").hidden && e.target.tagName !== "BUTTON") {
+      e.preventDefault(); spin();
+    }
+  });
+
+  /* ---------------- mulai ---------------- */
+  drawWheel();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawWheel);
+  setRot(0);
+  window.__roda = { results: function () { return results; }, showResult: showResult, fill: function (n) { for (var i = 0; i < N; i++) { used.add(i); results[i] = { tries: 1, pts: i < n ? 4 : 2 }; } renderBoard(); }, Q: Q, spin: spin, order: function () { return order; }, state: function () { return { used: used.size, spinning: spinning }; } };
+})();
+</script>
+
+</body></html>
